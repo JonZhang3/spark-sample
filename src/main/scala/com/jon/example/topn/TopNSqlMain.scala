@@ -1,9 +1,9 @@
 package com.jon.example.topn
 
+import com.jon.utils.Connectors
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions.{col, row_number}
-import org.apache.spark.sql.types.StructType
 
 object TopNSqlMain {
 
@@ -12,6 +12,7 @@ object TopNSqlMain {
             .config("", value = true)
             .appName("topn-sql")
             .getOrCreate()
+        session.read.text()
         import session.implicits._
         val data = Seq(
             ("A", "Tom", 78),
@@ -30,10 +31,14 @@ object TopNSqlMain {
         val df = session.sparkContext.parallelize(data).toDF("category", "name", "score")
         df.createOrReplaceTempView("person")
         val spec = Window.partitionBy($"category").orderBy($"score".desc)
-        df.withColumn("topn", row_number().over(spec))
-            .select($"category", $"name", $"score")
+        val writer = df.withColumn("topn", row_number().over(spec))
+            .select($"category")
             .where(col("topn") < 4)
-            .show()
+            .repartition(1)
+            .write
+        Connectors.text(writer)
+            .path("/Volumes/Transcend/code/my/spark-sample/src/main/resources/test")
+            .save()
 //        session.sql("select category, name,score, rank from (SELECT category,name,score, row_number() over(partition by category sort by score desc) rank FROM person) t where t.rank < 4")
 //            .show()
     }
