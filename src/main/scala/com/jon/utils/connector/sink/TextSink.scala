@@ -5,6 +5,8 @@ import org.apache.spark.sql.DataFrameWriter
 class TextSink[T](val writer: DataFrameWriter[T])
     extends Sink[T](writer) {
 
+    override type R = TextSink[T]
+
     private var path: String = _
 
     def path(path: String): TextSink[T] = {

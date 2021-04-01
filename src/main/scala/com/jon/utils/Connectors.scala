@@ -1,14 +1,16 @@
 package com.jon.utils
 
-import com.jon.utils.connector.sink.{JdbcSink, TextSink}
-import com.jon.utils.connector.source.TextSource
+import com.jon.utils.connector.sink.{JdbcSink, KafkaSink, TextSink}
+import com.jon.utils.connector.source.{KafkaSource, TextSource}
+import org.apache.spark.sql.streaming.{DataStreamReader, DataStreamWriter}
 import org.apache.spark.sql.{DataFrameReader, DataFrameWriter}
 
 object Connectors {
 
-    private val FORMATER_CSV = "csv"
-    private val FORMATER_JDBC = "jdbc"
-    private val FORMATER_TEXT = "text"
+    val FORMATER_CSV = "csv"
+    val FORMATER_JDBC = "jdbc"
+    val FORMATER_TEXT = "text"
+    val FORMATER_KAFKA = "kafka"
 
     def text(reader: DataFrameReader): TextSource = {
         reader.format(FORMATER_TEXT)
@@ -43,6 +45,22 @@ object Connectors {
     def jdbc[T](writer: DataFrameWriter[T]): JdbcSink[T] = {
         writer.format(FORMATER_JDBC)
         new JdbcSink[T](writer)
+    }
+
+    def kafka(reader: DataFrameReader): KafkaSource = {
+        new KafkaSource(reader = reader)
+    }
+
+    def kafkaStream(reader: DataStreamReader): KafkaSource = {
+        new KafkaSource(sreader = reader)
+    }
+
+    def kafka[T](writer: DataFrameWriter[T]): KafkaSink[T] = {
+        new KafkaSink[T](writer)
+    }
+
+    def kafka[T](writer: DataStreamWriter[T]): KafkaSink[T] = {
+        new KafkaSink[T](swriter = writer)
     }
 
 }

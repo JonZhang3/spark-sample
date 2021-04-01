@@ -36,8 +36,10 @@ object TopNSqlMain {
             .where(col("topn") < 4)
             .repartition(1)
             .write
+
         Connectors.text(writer)
-            .path("/Volumes/Transcend/code/my/spark-sample/src/main/resources/test")
+            .option("", "")
+            .path("")
             .save()
 //        session.sql("select category, name,score, rank from (SELECT category,name,score, row_number() over(partition by category sort by score desc) rank FROM person) t where t.rank < 4")
 //            .show()
